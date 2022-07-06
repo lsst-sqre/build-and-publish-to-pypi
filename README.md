@@ -40,12 +40,13 @@ jobs:
         uses: lsst-sqre/build-and-publish-to-pypi@v1
         with:
           pypi-token: ${{ secrets.PYPI_SQRE_ADMIN }}
+          python-version: "3.10"
 ```
 
 ## Inputs
 
 - `pypi-token` (string, required) an API token for PyPI.
-- `python-version` (string, optional) the Python version. Default is `3.10`.
+- `python-version` (string, required) the Python version.
 
 ## Outputs
 

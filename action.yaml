@@ -8,8 +8,7 @@ inputs:
     required: true
   python-version:
     description: "Python version"
-    required: false
-    default: "3.10"
+    required: true
 runs:
   using: "composite"
   steps:
