@@ -27,11 +27,24 @@ runs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade build
 
+    - name: Install twine for check
+      shell: bash
+      if: fromJSON(inputs.upload) == false
+      run: |
+        python -m pip install --upgrade twine
+
     - name: Build
+      shell: bash
       run: python -m build
 
+    - name: Check packaging
+      shell: bash
+      if: fromJSON(inputs.upload) == false
+      run: |
+        twine check dist/*
+
     - name: Publish
-      if: fromJSON(${{ inputs.upload }})
+      if: fromJSON(inputs.upload) == true
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: __token__
