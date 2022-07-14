@@ -9,6 +9,10 @@ inputs:
   python-version:
     description: "Python version"
     required: true
+  upload:
+    description: "Enable PyPI Uploads"
+    required: false
+    default: "true"
 runs:
   using: "composite"
   steps:
@@ -27,6 +31,7 @@ runs:
       run: python -m build
 
     - name: Publish
+      if: fromJSON(${{ inputs.upload }})
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: __token__

@@ -47,6 +47,7 @@ jobs:
 
 - `pypi-token` (string, required) an API token for PyPI.
 - `python-version` (string, required) the Python version.
+- `upload` (boolean, optional) a flag to enable PyPI uploads. Default is `true`.
 
 ## Outputs
 
