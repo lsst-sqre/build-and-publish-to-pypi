@@ -48,6 +48,7 @@ jobs:
 - `pypi-token` (string, required) an API token for PyPI.
 - `python-version` (string, required) the Python version.
 - `upload` (boolean, optional) a flag to enable PyPI uploads. Default is `true`.
+  If `false`, the action skips the upload to PyPI, but also runs additional pre-flight validation with [`twine check`](https://twine.readthedocs.io/en/stable/index.html#twine-check).
 
 ## Outputs
 
@@ -77,6 +78,40 @@ jobs:
 
     runs-on: ubuntu-latest
     needs: [lint, test, docs]
+```
+
+### Running in a dry-run
+
+You only want to publish to PyPI in a release event, which is typically for tag pushes.
+You can still run this action in a general pull request workflow, however, to test and validate the package build without uploading to PyPI.
+See how the `upload` parameter can be toggled off for non-release events:
+
+```yaml
+name: Python CI
+
+"on":
+  push:
+    tags:
+      - "*"
+  pull_request: {}
+
+jobs:
+
+  pypi:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # full history for setuptools_scm
+
+      - name: Build and publish
+        uses: lsst-sqre/build-and-publish-to-pypi@v1
+        with:
+          pypi-token: ${{ secrets.PYPI_SQRE_ADMIN }}
+          python-version: "3.10"
+          upload: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
 ```
 
 ## Developer guide
