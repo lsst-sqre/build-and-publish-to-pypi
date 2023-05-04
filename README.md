@@ -25,9 +25,7 @@ name: Python CI
   pull_request: {}
 
 jobs:
-
   pypi:
-
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
 
@@ -49,6 +47,7 @@ jobs:
 - `python-version` (string, required) the Python version.
 - `upload` (boolean, optional) a flag to enable PyPI uploads. Default is `true`.
   If `false`, the action skips the upload to PyPI, but also runs additional pre-flight validation with [`twine check`](https://twine.readthedocs.io/en/stable/index.html#twine-check).
+- `working-directory` (string, optional) the directory containing the package to build and publish. Default is `.`.
 
 ## Outputs
 
@@ -61,21 +60,21 @@ No outputs.
 Typically, you'll want to run the PyPI upload _after_ doing any tests.
 In that case, add a `needs` field listing those other jobs:
 
-
 ```yaml
 jobs:
-
-  lint: {}
+  lint:
+    {}
     # ...
 
-  test: {}
+  test:
+    {}
     # ...
 
-  docs: {}
+  docs:
+    {}
     # ...
 
   pypi:
-
     runs-on: ubuntu-latest
     needs: [lint, test, docs]
 ```
@@ -96,9 +95,7 @@ name: Python CI
   pull_request: {}
 
 jobs:
-
   pypi:
-
     runs-on: ubuntu-latest
 
     steps:

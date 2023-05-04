@@ -13,6 +13,10 @@ inputs:
     description: "Enable PyPI Uploads"
     required: false
     default: "true"
+  working-directory:
+    description: "Working directory"
+    required: false
+    default: "."
 runs:
   using: "composite"
   steps:
@@ -35,10 +39,12 @@ runs:
 
     - name: Build
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: python -m build
 
     - name: Check packaging
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       if: fromJSON(inputs.upload) == false
       run: |
         twine check dist/*
@@ -49,3 +55,4 @@ runs:
       with:
         user: __token__
         password: ${{ inputs.pypi-token }}
+        packages-dir: ${{ inputs.working-directory }}/dist
