@@ -5,13 +5,14 @@ This is a [composite GitHub Action](https://docs.github.com/en/actions/creating-
 This actions rolls into a single step two tasks that are commonly run together:
 
 1. Build a Python package's distribution, accomplished with the PyPA's [build](https://pypa-build.readthedocs.io/en/stable/index.html) tool.
-2. Upload the distribution to PyPI, using the [pypa/gh-action-pypi-publish](https://github.com/pypa/gh-action-pypi-publish) action.
+2. Upload the distribution to PyPI, using the [pypa/gh-action-pypi-publish](https://github.com/pypa/gh-action-pypi-publish) action, using PyPI's [trusted publishers](https://docs.pypi.org/trusted-publishers/) mechanism. **New in v2: using trusted publishers is required. Use v1 for the legacy account token for PyPI.**
 
-Since this action uses the [build](https://pypa-build.readthedocs.io/en/stable/index.html) tool, any [PEP 517](https://peps.python.org/pep-0517/)-compatible packaging backend is supported, including [setuptools](https://setuptools.pypa.io/en/latest/).
-You can make your project PEP 517-compatible by adding a `project.toml` file and specifying the build backend in a `[build-system]` section ([see setuptools' tutorial on this](https://setuptools.pypa.io/en/latest/build_meta.html)).
-
-**However, building wheels for multiple platforms is not supported by this action.**
-If your package compiles extensions, you'll need to build your own multi-platform GitHub Actions job that builds a wheel on each platform.
+> **Note**
+> Since this action uses the [build](https://pypa-build.readthedocs.io/en/stable/index.html) tool, any [PEP 517](https://peps.python.org/pep-0517/)-compatible packaging backend is supported, including [setuptools](https://setuptools.pypa.io/en/latest/).
+> You can make your project PEP 517-compatible by adding a `project.toml` file and specifying the build backend in a `[build-system]` section ([see setuptools' tutorial on this](https://setuptools.pypa.io/en/latest/build_meta.html)).
+>
+> **However, building wheels for multiple platforms is not supported by this action.**
+> If your package compiles extensions, you'll need to build your own multi-platform GitHub Actions job that builds a wheel on each platform.
 
 ## Example usage
 
@@ -37,13 +38,11 @@ jobs:
       - name: Build and publish
         uses: lsst-sqre/build-and-publish-to-pypi@v1
         with:
-          pypi-token: ${{ secrets.PYPI_SQRE_ADMIN }}
           python-version: "3.10"
 ```
 
 ## Inputs
 
-- `pypi-token` (string, required) an API token for PyPI.
 - `python-version` (string, required) the Python version.
 - `upload` (boolean, optional) a flag to enable PyPI uploads. Default is `true`.
   If `false`, the action skips the upload to PyPI, but also runs additional pre-flight validation with [`twine check`](https://twine.readthedocs.io/en/stable/index.html#twine-check).
@@ -106,7 +105,6 @@ jobs:
       - name: Build and publish
         uses: lsst-sqre/build-and-publish-to-pypi@v1
         with:
-          pypi-token: ${{ secrets.PYPI_SQRE_ADMIN }}
           python-version: "3.10"
           upload: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
 ```
