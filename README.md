@@ -16,6 +16,14 @@ This actions rolls into a single step two tasks that are commonly run together:
 
 ## Usage
 
+This action uses PyPI's trusted publisher mechanism.
+Start by following the [PyPI documentation](https://docs.pypi.org/trusted-publishers/) to set up a trusted publisher for your PyPI project.
+Note in particular the name of the environment and the workflow file.
+In the example below, the environment is `pypi`.
+The workflow file should match where the YAML workflow file is created.
+
+Next, modify that GitHub Actions workflow file in your repository to include this action:
+
 ```yaml
 name: Python CI
 
@@ -26,8 +34,15 @@ name: Python CI
     types: [published]
 
 jobs:
-  pypi:
+  pypi-publish:
+    name: Upload release to PyPI
     runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/<your-pypi-project-name>
+    permissions:
+      id-token: write
+    if: github.event_name == 'release' && github.event.action == 'published'
 
     steps:
       - uses: actions/checkout@v3
@@ -37,8 +52,7 @@ jobs:
       - name: Build and publish
         uses: lsst-sqre/build-and-publish-to-pypi@v1
         with:
-          python-version: "3.10"
-          upload: ${{ github.event_name == 'release' && gitub.event.action == 'published' }}
+          python-version: "3.11"
 ```
 
 Notes:
@@ -78,10 +92,65 @@ jobs:
     {}
     # ...
 
-  pypi:
+  pypi-publish:
     runs-on: ubuntu-latest
     needs: [lint, test, docs]
 ```
+
+### Dry-run mode for package validation
+
+You only want to publish to PyPI in a release event, which is typically for GitHub Release publication or tag pushes.
+You can still run this action in a general pull request workflow, however, to test and validate the package build without uploading to PyPI.
+See how the `upload` parameter can be toggled off for non-release events:
+
+```yaml
+name: Python CI
+
+"on":
+  push: {}
+  pull_request: {}
+  release:
+    types: [published]
+
+jobs:
+  test-package:
+    name: Test PyPI package build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # full history for setuptools_scm
+
+      - name: Build and publish
+        uses: lsst-sqre/build-and-publish-to-pypi@v1
+        with:
+          python-version: "3.11"
+          upload: "false"
+
+  pypi-publish:
+    name: Upload release to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/<your-pypi-project-name>
+    permissions:
+      id-token: write
+    if: github.event_name == 'release' && github.event.action == 'published'
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # full history for setuptools_scm
+
+      - name: Build and publish
+        uses: lsst-sqre/build-and-publish-to-pypi@v1
+        with:
+          python-version: "3.11"
+```
+
+The `test-package` job will run on all events, but the `pypi-publish` job will only run on release events.
+Since `test-package` doesn't perform an upload to PyPI, it should not include the `pypi` environment.
 
 ## Developer guide
 
