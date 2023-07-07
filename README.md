@@ -14,21 +14,20 @@ This actions rolls into a single step two tasks that are commonly run together:
 > **However, building wheels for multiple platforms is not supported by this action.**
 > If your package compiles extensions, you'll need to build your own multi-platform GitHub Actions job that builds a wheel on each platform.
 
-## Example usage
+## Usage
 
 ```yaml
 name: Python CI
 
 "on":
-  push:
-    tags:
-      - "*"
+  push: {}
   pull_request: {}
+  release:
+    types: [published]
 
 jobs:
   pypi:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
 
     steps:
       - uses: actions/checkout@v3
@@ -39,7 +38,13 @@ jobs:
         uses: lsst-sqre/build-and-publish-to-pypi@v1
         with:
           python-version: "3.10"
+          upload: ${{ github.event_name == 'release' && gitub.event.action == 'published' }}
 ```
+
+Notes:
+
+- We recommend using GitHub Releases to trigger a PyPI release. To do this, include the `release` event with a type of `published` in the workflows `on` section.
+  In the `lsst-sqre/build-and-publish-to-pypi`'s `upload` input, check if the event is a release publication. This allows the action to run on other events, such as pushes and pull requests, in a dry-run mode to validate the package build. Releases to PyPI are only performed when the GitHub Release is published.
 
 ## Inputs
 
@@ -76,37 +81,6 @@ jobs:
   pypi:
     runs-on: ubuntu-latest
     needs: [lint, test, docs]
-```
-
-### Running in a dry-run
-
-You only want to publish to PyPI in a release event, which is typically for tag pushes.
-You can still run this action in a general pull request workflow, however, to test and validate the package build without uploading to PyPI.
-See how the `upload` parameter can be toggled off for non-release events:
-
-```yaml
-name: Python CI
-
-"on":
-  push:
-    tags:
-      - "*"
-  pull_request: {}
-
-jobs:
-  pypi:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # full history for setuptools_scm
-
-      - name: Build and publish
-        uses: lsst-sqre/build-and-publish-to-pypi@v1
-        with:
-          python-version: "3.10"
-          upload: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
 ```
 
 ## Developer guide
