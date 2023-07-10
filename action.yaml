@@ -3,9 +3,6 @@ description: >
   This composite action builds a Python package's distribution with the
   PyPA's build tool (PEP517) and uploads it to PyPI.
 inputs:
-  pypi-token:
-    description: "Token for PyPI"
-    required: true
   python-version:
     description: "Python version"
     required: true
@@ -53,6 +50,4 @@ runs:
       if: fromJSON(inputs.upload) == true
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        user: __token__
-        password: ${{ inputs.pypi-token }}
         packages-dir: ${{ inputs.working-directory }}/dist
