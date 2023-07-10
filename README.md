@@ -67,7 +67,7 @@ jobs:
           fetch-depth: 0 # full history for setuptools_scm
 
       - name: Build and publish
-        uses: lsst-sqre/build-and-publish-to-pypi@v1
+        uses: lsst-sqre/build-and-publish-to-pypi@v2
         with:
           python-version: "3.11"
 ```
@@ -146,7 +146,7 @@ jobs:
           fetch-depth: 0 # full history for setuptools_scm
 
       - name: Build and publish
-        uses: lsst-sqre/build-and-publish-to-pypi@v1
+        uses: lsst-sqre/build-and-publish-to-pypi@v2
         with:
           python-version: "3.11"
           upload: "false"
@@ -167,7 +167,7 @@ jobs:
           fetch-depth: 0 # full history for setuptools_scm
 
       - name: Build and publish
-        uses: lsst-sqre/build-and-publish-to-pypi@v1
+        uses: lsst-sqre/build-and-publish-to-pypi@v2
         with:
           python-version: "3.11"
 ```
@@ -206,7 +206,7 @@ jobs:
           fetch-depth: 0 # full history for setuptools_scm
 
       - name: Build and publish
-        uses: lsst-sqre/build-and-publish-to-pypi@v1
+        uses: lsst-sqre/build-and-publish-to-pypi@v2
         with:
           python-version: "3.11"
 ```
