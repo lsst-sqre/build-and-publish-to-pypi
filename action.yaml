@@ -48,6 +48,8 @@ runs:
 
     - name: Publish
       if: fromJSON(inputs.upload) == true
-      uses: pypa/gh-action-pypi-publish@release/v1
+      # Pinned because 1.12 breaks using this in a composite action:
+      # https://github.com/pypa/gh-action-pypi-publish/issues/299
+      uses: pypa/gh-action-pypi-publish@v1.11.0
       with:
         packages-dir: ${{ inputs.working-directory }}/dist
