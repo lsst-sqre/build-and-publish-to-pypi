@@ -50,6 +50,6 @@ runs:
       if: fromJSON(inputs.upload) == true
       # Pinned because 1.12 breaks using this in a composite action:
       # https://github.com/pypa/gh-action-pypi-publish/issues/299
-      uses: pypa/gh-action-pypi-publish@v1.11.0
+      uses: pypa/gh-action-pypi-publish@v1.12.3
       with:
         packages-dir: ${{ inputs.working-directory }}/dist
