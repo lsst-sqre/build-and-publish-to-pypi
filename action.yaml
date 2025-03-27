@@ -1,11 +1,8 @@
 name: "Build and publish to PyPI"
 description: >
-  This composite action builds a Python package's distribution with the
-  PyPA's build tool (PEP517) and uploads it to PyPI.
+  This composite action builds a Python package's distribution with uv and
+  uploads it to PyPI.
 inputs:
-  python-version:
-    description: "Python version"
-    required: true
   upload:
     description: "Enable PyPI Uploads"
     required: false
@@ -17,39 +14,18 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Set up Python
-      uses: actions/setup-python@v5
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v5
       with:
-        python-version: ${{ inputs.python-version }}
+        enable-cache: false
 
-    - name: Python install
-      shell: bash
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install --upgrade build
-
-    - name: Install twine for check
-      shell: bash
-      if: fromJSON(inputs.upload) == false
-      run: |
-        python -m pip install --upgrade twine
-
-    - name: Build
+    - name: Build the package
+      run: uv build --no-sources
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: python -m build
-
-    - name: Check packaging
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-      if: fromJSON(inputs.upload) == false
-      run: |
-        twine check dist/*
 
     - name: Publish
       if: fromJSON(inputs.upload) == true
-      # Pinned because 1.12 breaks using this in a composite action:
-      # https://github.com/pypa/gh-action-pypi-publish/issues/299
-      uses: pypa/gh-action-pypi-publish@v1.11.0
-      with:
-        packages-dir: ${{ inputs.working-directory }}/dist
+      run: uv publish
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}

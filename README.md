@@ -4,14 +4,17 @@ This is a [composite GitHub Action](https://docs.github.com/en/actions/creating-
 
 This actions rolls into a single step two tasks that are commonly run together:
 
-1. Build a Python package's distribution, accomplished with the PyPA's [build](https://pypa-build.readthedocs.io/en/stable/index.html) tool.
-2. Upload the distribution to PyPI, using the [pypa/gh-action-pypi-publish](https://github.com/pypa/gh-action-pypi-publish) action, using PyPI's [trusted publishers](https://docs.pypi.org/trusted-publishers/) mechanism. **New in v2: using trusted publishers is required. Use v1 for the legacy account token authentication method.**
+1. Build a Python package's distribution
+2. Upload the distribution to PyPI, using PyPI's [trusted publishers](https://docs.pypi.org/trusted-publishers/) mechanism. **New in v2: using trusted publishers is required. Use v1 for the legacy account token authentication method.**
 
-> **Note**
-> Since this action uses the [build](https://pypa-build.readthedocs.io/en/stable/index.html) tool, any [PEP 517](https://peps.python.org/pep-0517/)-compatible packaging backend is supported, including [setuptools](https://setuptools.pypa.io/en/latest/).
-> You can make your project PEP 517-compatible by adding a `project.toml` file and specifying the build backend in a `[build-system]` section ([see setuptools' tutorial on this](https://setuptools.pypa.io/en/latest/build_meta.html)).
->
-> **However, building wheels for multiple platforms is not supported by this action.**
+Both actions are done with [uv](https://docs.astral.sh/uv/).
+
+> [!NOTE]
+> Packages are built using the `--no-sources` option as recommended by the [uv documentation](https://docs.astral.sh/uv/guides/package/#building-your-package) to ensure that uv-specific configuration is not required.
+> Packages must be compatible with PEP 517, which means they must have a `pyproject.toml` file that specifies the build backend in a `[build-system]` section ([see setuptools' tutorial on this](https://setuptools.pypa.io/en/latest/build_meta.html)).
+
+> [!WARNING]
+> **Building wheels for multiple platforms is not supported by this action.**
 > If your package compiles extensions, you'll need to build your own multi-platform GitHub Actions job that builds a wheel on each platform.
 
 ## Usage
@@ -33,7 +36,7 @@ The name of this environment must match the name your specified to PyPI.
 
 If desired, enable "required reviewers" so that only trusted members or teams can publish to PyPI.
 
-> **Note**
+> [!NOTE]
 > If you are considering adding a branch restriction, be aware that the PyPI deployment (as recommended in the workflow below) is done in the context of a tag ref, not a branch like `main`.
 > Branch restrictions will not work in this case.
 
@@ -67,27 +70,24 @@ jobs:
           fetch-depth: 0 # full history for setuptools_scm
 
       - name: Build and publish
-        uses: lsst-sqre/build-and-publish-to-pypi@v2
-        with:
-          python-version: "3.11"
+        uses: lsst-sqre/build-and-publish-to-pypi@v3
 ```
 
-> **Note**
->
+> [!NOTE]
 > - This workflow file must match the name of the workflow file you specified in PyPI as the trusted publisher workflow file.
 > - Remember to set the `url` in the `environment` section to your PyPI project's URL.
 > - Ensure the environment's `name` matches the name of the environment you specified in PyPI.
 > - We recommend using GitHub Releases to trigger a PyPI release. To do this, include the `release` event with a type of `published` in the workflow's `on` section.
 >   In the job's `if` section, check that the event is a release publication.
 >   See _Dry-run mode for package validation_ below for how to run this action in a general Pull Request workflow without publishing to PyPI.
+> - To pin the version of uv used for building and uploading, set [required-version in `pyproject.toml`](https://docs.astral.sh/uv/reference/settings/#required-version).
 
 ## Action reference
 
 ### Inputs
 
-- `python-version` (string, required) the Python version.
 - `upload` (boolean, optional) a flag to enable PyPI uploads. Default is `true`.
-  If `false`, the action skips the upload to PyPI, but also runs additional pre-flight validation with [`twine check`](https://twine.readthedocs.io/en/stable/index.html#twine-check).
+  If `false`, the action still performs the package build to catch any build errors but skips the upload to PyPI.
 - `working-directory` (string, optional) the directory containing the package to build and publish. Default is `.`.
 
 ### Outputs
@@ -146,9 +146,8 @@ jobs:
           fetch-depth: 0 # full history for setuptools_scm
 
       - name: Build and publish
-        uses: lsst-sqre/build-and-publish-to-pypi@v2
+        uses: lsst-sqre/build-and-publish-to-pypi@v3
         with:
-          python-version: "3.11"
           upload: "false"
 
   pypi-publish:
@@ -167,9 +166,7 @@ jobs:
           fetch-depth: 0 # full history for setuptools_scm
 
       - name: Build and publish
-        uses: lsst-sqre/build-and-publish-to-pypi@v2
-        with:
-          python-version: "3.11"
+        uses: lsst-sqre/build-and-publish-to-pypi@v3
 ```
 
 The `test-package` job will run on all events, but the `pypi-publish` job will only run on release events.
@@ -206,9 +203,7 @@ jobs:
           fetch-depth: 0 # full history for setuptools_scm
 
       - name: Build and publish
-        uses: lsst-sqre/build-and-publish-to-pypi@v2
-        with:
-          python-version: "3.11"
+        uses: lsst-sqre/build-and-publish-to-pypi@v3
 ```
 
 ## Developer guide
